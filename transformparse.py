@@ -2,12 +2,15 @@ from enum import Enum
 
 class TransformParser:
 
-	def __init__(self, filename):
-		self.filename = filename
+	def __init__(self, transform_string):
+		self.transform_string = transform_string
 
 		# Set up instruction queue
 
 	def parse(self):
+		pass
+
+	def apply(self, xml_string: str) -> str:
 		pass
 
 
