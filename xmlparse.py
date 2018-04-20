@@ -14,6 +14,3 @@ class XMLParser:
 	def writeTreeToFile(self, dst):
 		self.etree.write(dst)
 
-
-parser = XMLParser("mini_test.xml")
-parser.writeTreeToFile("output.xml")
