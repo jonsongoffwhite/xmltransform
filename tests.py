@@ -1,6 +1,29 @@
 import unittest
 from transformparse import TransformParser
 
+class TestTransformParse(unittest.TestCase):
+
+	def test_parse_single(self):
+		test_input = '[rename, /memory[1]/mailbox[1], box]'
+		expected_output = ['[rename, /memory[1]/mailbox[1], box]']
+		parser = TransformParser(test_input)
+		elems = parser.parse()
+		self.assertEqual(elems, expected_output)
+
+	def test_parse_multiple(self):
+		test_input = '[rename, /memory[1]/mailbox[1], box][rename, /memory[1]/mailbox[1], box]'
+		expected_output = ['[rename, /memory[1]/mailbox[1], box]', '[rename, /memory[1]/mailbox[1], box]']
+		parser = TransformParser(test_input)
+		elems = parser.parse()
+		self.assertEqual(elems, expected_output)
+
+	def test_parse_none(self):
+		pass
+
+	def test_parse_invalid(self):
+		pass
+
+
 class TestTransformInstructions(unittest.TestCase):
 
 	test_rename_xml_input = '<memory> <mailbox path="/var/spool/mail/almaster"/> </memory>'
@@ -8,10 +31,10 @@ class TestTransformInstructions(unittest.TestCase):
 	test_rename_expected_output = '<memory> <box path="/var/spool/mail/almaster"/> <memory>'
 
 	def test_rename(self):
-		parser = TransformParser(test_rename_transform_input)
+		parser = TransformParser(self.test_rename_transform_input)
 		parser.parse()
-		output = parser.apply(test_rename_xml_input)
-		self.assertEqual(output, test_rename_expected_output)
+		output = parser.apply(self.test_rename_xml_input)
+		self.assertEqual(output, self.test_rename_expected_output)
 
 	def test_update(self):
 		pass
