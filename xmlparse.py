@@ -3,6 +3,7 @@ import xml.etree.ElementTree as ElementTree
 class XMLParser:
 
 	def __init__(self, filename):
+		self.filename = filename
 		try:
 			self.etree = ElementTree.parse(filename)
 			self.root = self.etree.getroot()
