@@ -3,25 +3,33 @@ from transformparse import TransformParser
 
 class TestTransformParse(unittest.TestCase):
 
-	def test_parse_single(self):
+	def test_instruction_string_single(self):
 		test_input = '[rename, /memory[1]/mailbox[1], box]'
 		expected_output = ['[rename, /memory[1]/mailbox[1], box]']
 		parser = TransformParser(test_input)
-		elems = parser.parse()
+		elems = parser._get_instruction_strings()
 		self.assertEqual(elems, expected_output)
 
-	def test_parse_multiple(self):
+	def test_instruction_string_multiple(self):
 		test_input = '[rename, /memory[1]/mailbox[1], box][rename, /memory[1]/mailbox[1], box]'
 		expected_output = ['[rename, /memory[1]/mailbox[1], box]', '[rename, /memory[1]/mailbox[1], box]']
 		parser = TransformParser(test_input)
-		elems = parser.parse()
+		elems = parser._get_instruction_strings()
 		self.assertEqual(elems, expected_output)
 
-	def test_parse_none(self):
-		pass
+	def test_instruction_string_none(self):
+		test_input = ''
+		expected_output = []
+		parser = TransformParser(test_input)
+		elems = parser._get_instruction_strings()
+		self.assertEqual(elems, expected_output)
 
-	def test_parse_invalid(self):
-		pass
+	def test_instruction_string_invalid(self):
+		test_input = '[rename, /memory[1]/mailbox[1], box'
+		expected_output = []
+		parser = TransformParser(test_input)
+		elems = parser._get_instruction_strings()
+		self.assertEqual(elems, expected_output)
 
 
 class TestTransformInstructions(unittest.TestCase):
