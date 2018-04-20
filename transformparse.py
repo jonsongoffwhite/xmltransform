@@ -1,4 +1,7 @@
 from enum import Enum
+from xmlparse import XMLParser
+import logging
+import sys
 
 class TransformParser:
 
@@ -41,7 +44,7 @@ class TransformParser:
 			# Remove square brackets
 			ins_str = ins_str[1:-1]
 			# Split by comma
-			ins_param_str = ins_str.split(',')
+			ins_param_str = ins_str.replace(" ", "").split(',')
 			# Create Instruction
 			command = Command.get_command_from_str(ins_param_str[0])
 			location = ins_param_str[1]
@@ -56,8 +59,31 @@ class TransformParser:
 		instructions = self._create_instructions(instruction_strings)
 		return instructions
 
-	def apply(self, xml_string: str) -> str:
-		pass
+	def apply(self, instructions: list, xml_string: str) -> str:
+		logging.basicConfig( stream=sys.stderr )
+		logging.getLogger( "SomeTest.testSomething" ).setLevel( logging.DEBUG )
+		log= logging.getLogger( "SomeTest.testSomething" )
+
+		xmlparser = XMLParser(xml_string)
+		tree = xmlparser.get_tree()
+		for ins in instructions:
+			root = tree.getroot()
+
+			if ins.command == Command.RENAME:
+				curr = root
+				# Skip root
+				for loc in ins.locations[1:]:
+
+					log.debug("\nloc 0: " + str(loc[0]))
+					log.debug("\nloc 1: " + str(loc[1]))
+					log.debug("\n")
+					log.debug(curr)
+					log.debug("\n")
+					curr = curr.findall(loc[0])[loc[1]]
+				curr.tag = ins.value
+		return xmlparser.get_string()
+
+
 
 
 class Command(Enum):
@@ -81,7 +107,15 @@ class Instruction:
 
 	def __init__(self, command: Command, location: str, value: str):
 		self.command = command
-		self.location = location.split("/")
+
+		locations = location.split("/")[1:] # Remove first empty string
+		self.locations = []
+		for location in locations:
+			# Separate index and dir
+			dir_  = location.split('[')[0]
+			index_str = location.split('[')[1].split(']')[0]
+			self.locations.append((dir_, int(index_str)-1))
+
 		self.value = value
 
 	def getLocation(self) -> str:

@@ -1,5 +1,6 @@
 import unittest
 from transformparse import TransformParser
+import xml.etree.ElementTree as ElementTree
 
 class TestTransformParse(unittest.TestCase):
 
@@ -36,13 +37,17 @@ class TestTransformInstructions(unittest.TestCase):
 
 	test_rename_xml_input = '<memory> <mailbox path="/var/spool/mail/almaster"/> </memory>'
 	test_rename_transform_input = '[rename, /memory[1]/mailbox[1], box]'
-	test_rename_expected_output = '<memory> <box path="/var/spool/mail/almaster"/> <memory>'
+	test_rename_expected_output = '<memory> <box path="/var/spool/mail/almaster"/> </memory>'
 
 	def test_rename(self):
 		parser = TransformParser(self.test_rename_transform_input)
-		parser.parse()
-		output = parser.apply(self.test_rename_xml_input)
-		self.assertEqual(output, self.test_rename_expected_output)
+		instructions = parser.parse()
+		output = parser.apply(instructions, self.test_rename_xml_input)
+		# Normalise expected
+		ex_root = ElementTree.fromstring(self.test_rename_expected_output)
+		expected = ElementTree.tostring(ex_root, encoding="unicode")
+
+		self.assertEqual(output, expected)
 
 	def test_update(self):
 		pass
