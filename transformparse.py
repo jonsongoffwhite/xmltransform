@@ -73,14 +73,23 @@ class TransformParser:
 				curr = root
 				# Skip root
 				for loc in ins.locations[1:]:
-
-					log.debug("\nloc 0: " + str(loc[0]))
-					log.debug("\nloc 1: " + str(loc[1]))
-					log.debug("\n")
-					log.debug(curr)
-					log.debug("\n")
 					curr = curr.findall(loc[0])[loc[1]]
 				curr.tag = ins.value
+
+			elif ins.command == Command.UPDATE:
+				# Either starts with @ indicating attribute,
+				# or is text() indicating text value
+				curr = root
+				final_loc = ins.locations[-1]
+				# Skip root
+				for loc in ins.locations[1:-1]:
+					curr = curr.findall(loc[0])[loc[1]]
+				if final_loc[0][0] == '@':
+					curr.attrib[final_loc[0][1:]] = ins.value
+				elif final_loc[0][-2:] == '()' and final_loc[0][:-2] == 'text':
+					curr.text = ins.value
+
+
 		return xmlparser.get_string()
 
 
@@ -111,10 +120,17 @@ class Instruction:
 		locations = location.split("/")[1:] # Remove first empty string
 		self.locations = []
 		for location in locations:
+
+			# Final location might be special
+			if location[0] == '@' or location[-2:] == '()':
+				dir_ = location
+				index_int = -1
+			else:
 			# Separate index and dir
-			dir_  = location.split('[')[0]
-			index_str = location.split('[')[1].split(']')[0]
-			self.locations.append((dir_, int(index_str)-1))
+				dir_  = location.split('[')[0]
+				index_str = location.split('[')[1].split(']')[0]
+				index_int = int(index_str)-1
+			self.locations.append((dir_, index_int))
 
 		self.value = value
 

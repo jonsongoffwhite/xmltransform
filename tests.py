@@ -39,6 +39,10 @@ class TestTransformInstructions(unittest.TestCase):
 	test_rename_transform_input = '[rename, /memory[1]/mailbox[1], box]'
 	test_rename_expected_output = '<memory> <box path="/var/spool/mail/almaster"/> </memory>'
 
+	test_update_xml_input = '<memory> <mailbox path="/var/spool/mail/almaster"/> </memory>'
+	test_update_transform_input = '[update, /memory[1]/mailbox[1]/@path, /new/path/]'
+	test_update_expected_output = '<memory> <mailbox path="/new/path/"/> </memory>'
+
 	def test_rename(self):
 		parser = TransformParser(self.test_rename_transform_input)
 		instructions = parser.parse()
@@ -50,7 +54,14 @@ class TestTransformInstructions(unittest.TestCase):
 		self.assertEqual(output, expected)
 
 	def test_update(self):
-		pass
+		parser = TransformParser(self.test_update_transform_input)
+		instructions = parser.parse()
+		output = parser.apply(instructions, self.test_update_xml_input)
+		# Normalise expected
+		ex_root = ElementTree.fromstring(self.test_update_expected_output)
+		expected = ElementTree.tostring(ex_root, encoding="unicode")
+
+		self.assertEqual(output, expected)
 
 	def test_append_first(self):
 		pass
