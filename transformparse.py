@@ -143,6 +143,23 @@ class TransformParser:
 				src_parent.remove(src)
 				dst.insert(0, src)
 
+			elif ins.command == Command.MOVE_AFTER:
+				curr = root
+				for loc in ins.locations[1:-1]:
+					curr = curr.findall(loc[0])[loc[1]]
+				src_parent = curr
+				src_loc = ins.locations[-1]
+				src = curr.findall(src_loc[0])[src_loc[1]]
+				curr = root
+				for loc in ins.value[1:-1]:
+					curr = curr.findall(loc[0])[loc[1]]
+				dst = curr
+				indices = [i for i, x in enumerate(dst) if x.tag == ins.value[-1][0]]
+				new_index = indices[ins.value[-1][1]] + 1
+				src_parent.remove(src)
+				dst.insert(new_index, src)
+
+
 
 
 

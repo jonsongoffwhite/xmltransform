@@ -61,6 +61,10 @@ class TestTransformInstructions(unittest.TestCase):
 	test_move_first_transform_input = '[move-first, /a[1]/c[1], /a[1]]'
 	test_move_first_expected_output = '<a><c></c><b></b></a>'
 
+	test_move_after_xml_input = '<a><b></b><c></c></a>'
+	test_move_after_transform_input = '[move-after, /a[1]/b[1], /a[1]/c[1]]'
+	test_move_after_expected_output = '<a><c></c><b></b></a>'
+
 	def _transform_test(self, xml_input, transform_input, xml_output):
 		parser = TransformParser(transform_input)
 		instructions = parser.parse()
@@ -90,7 +94,7 @@ class TestTransformInstructions(unittest.TestCase):
 		self._transform_test(self.test_move_first_xml_input, self.test_move_first_transform_input, self.test_move_first_expected_output)
 
 	def test_move_after(self):
-		pass
+		self._transform_test(self.test_move_after_xml_input, self.test_move_after_transform_input, self.test_move_after_expected_output)
 
 	def test_remove(self):
 		pass
