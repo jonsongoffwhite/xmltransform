@@ -47,6 +47,10 @@ class TestTransformInstructions(unittest.TestCase):
 	test_append_first_transform_input = '[append-first, /oopoyy[1], <gap/>]'
 	test_append_first_expected_output = '<oopoyy><gap/><function/></oopoyy>'
 
+	test_append_xml_input = '<oopoyy><function/></oopoyy>'
+	test_append_transform_input = '[append, /oopoyy[1], <gap/>]'
+	test_append_expected_output = '<oopoyy><function/><gap/></oopoyy>'
+
 	def _transform_test(self, xml_input, transform_input, xml_output):
 		parser = TransformParser(transform_input)
 		instructions = parser.parse()
@@ -67,7 +71,7 @@ class TestTransformInstructions(unittest.TestCase):
 		self._transform_test(self.test_append_first_xml_input, self.test_append_first_transform_input, self.test_append_first_expected_output)
 
 	def test_append(self):
-		pass
+		self._transform_test(self.test_append_xml_input, self.test_append_transform_input, self.test_append_expected_output)
 
 	def test_insert_after(self):
 		pass

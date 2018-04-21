@@ -99,6 +99,14 @@ class TransformParser:
 				# Append first
 				curr.insert(0, element)
 
+			elif ins.command == Command.APPEND:
+				curr = root
+				# Skip root
+				for loc in ins.locations[1:]:
+					curr = curr.findall(loc[0])[loc[1]]
+				element = ElementTree.fromstring(ins.value)
+				curr.append(element)
+
 
 		return xmlparser.get_string()
 
