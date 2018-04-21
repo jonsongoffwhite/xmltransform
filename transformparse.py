@@ -1,5 +1,6 @@
 from enum import Enum
 from xmlparse import XMLParser
+import xml.etree.ElementTree as ElementTree
 import logging
 import sys
 
@@ -89,6 +90,15 @@ class TransformParser:
 				elif final_loc[0][-2:] == '()' and final_loc[0][:-2] == 'text':
 					curr.text = ins.value
 
+			elif ins.command == Command.APPEND_FIRST:
+				curr = root
+				# Skip root
+				for loc in ins.locations[1:]:
+					curr = curr.findall(loc[0])[loc[1]]
+				element = ElementTree.fromstring(ins.value)
+				# Append first
+				curr.insert(0, element)
+
 
 		return xmlparser.get_string()
 
@@ -117,19 +127,27 @@ class Instruction:
 	def __init__(self, command: Command, location: str, value: str):
 		self.command = command
 
-		locations = location.split("/")[1:] # Remove first empty string
+		# Remove first empty string
+		locations = location.split("/")[1:] 
 		self.locations = []
 		for location in locations:
 
+			if len(location) == 0:
+				dir_ = ""
+				index_int = -1
 			# Final location might be special
-			if location[0] == '@' or location[-2:] == '()':
+			elif location[0] == '@' or location[-2:] == '()':
 				dir_ = location
 				index_int = -1
 			else:
-			# Separate index and dir
+				# Separate index and dir
 				dir_  = location.split('[')[0]
-				index_str = location.split('[')[1].split(']')[0]
-				index_int = int(index_str)-1
+				# If there is an index, parse it, otherwise -1
+				if len(location.split('[')) == 1:
+					index_int = -1
+				else:
+					index_str = location.split('[')[1].split(']')[0]
+					index_int = int(index_str)-1
 			self.locations.append((dir_, index_int))
 
 		self.value = value
