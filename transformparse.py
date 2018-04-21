@@ -45,7 +45,8 @@ class TransformParser:
 			# This is all bad because of text
 			# Remove square brackets
 			ins_str = ins_str[1:-1]
-			# Split on first 2 so won't interfere with text, maybe issue with MOVE?
+			# Split on first 2 so won't interfere with text
+			# Only splits on 1 remove
 			ins_param_str = ins_str.split(',', 2)
 			# Remove space if at start
 			new_param_str = []
@@ -56,7 +57,12 @@ class TransformParser:
 			# Create Instruction
 			command = Command.get_command_from_str(new_param_str[0])
 			location = new_param_str[1]
-			value = new_param_str[2]
+
+			# Check, as remove only has 2 params
+			if len(new_param_str) > 2:
+				value = new_param_str[2]
+			else:
+				value = ""
 			ins.append(Instruction(command, location, value))
 
 		return ins
@@ -158,6 +164,15 @@ class TransformParser:
 				new_index = indices[ins.value[-1][1]] + 1
 				src_parent.remove(src)
 				dst.insert(new_index, src)
+
+			elif ins.command == Command.REMOVE:
+				curr = root
+				for loc in ins.locations[1:-1]:
+					curr = curr.findall(loc[0])[loc[1]]
+				parent = curr
+				loc = ins.locations[-1]
+				rem = curr.findall(loc[0])[loc[1]]
+				parent.remove(rem)
 
 
 
