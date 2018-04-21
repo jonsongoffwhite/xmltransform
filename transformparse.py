@@ -128,6 +128,22 @@ class TransformParser:
 				element = ElementTree.fromstring(ins.value)
 				curr.insert(new_index, element)
 
+			elif ins.command == Command.MOVE_FIRST:
+				curr = root
+				# Value is also location
+				for loc in ins.locations[1:-1]:
+					curr = curr.findall(loc[0])[loc[1]]
+				src_parent = curr
+				src_loc = ins.locations[-1]
+				src = curr.findall(src_loc[0])[src_loc[1]]
+				curr = root
+				for loc in ins.value[1:]:
+					curr = curr.findall(loc[0])[loc[1]]
+				dst = curr
+				src_parent.remove(src)
+				dst.insert(0, src)
+
+
 
 
 		return xmlparser.get_string()
@@ -158,10 +174,19 @@ class Instruction:
 		self.command = command
 
 		# Remove first empty string
-		locations = location.split("/")[1:] 
-		self.locations = []
-		for location in locations:
+		self.locations = self._split_location(location)
 
+		# Value is also a location in these cases
+		if command == Command.MOVE_FIRST or command == Command.MOVE_AFTER:
+			self.value = self._split_location(value)
+		else:
+			self.value = value
+
+	def _split_location(self, location_str) -> list:
+		location_strs = location_str.split("/")[1:] 
+		locations = []
+
+		for location in location_strs:
 			if len(location) == 0:
 				dir_ = ""
 				index_int = -1
@@ -178,9 +203,9 @@ class Instruction:
 				else:
 					index_str = location.split('[')[1].split(']')[0]
 					index_int = int(index_str)-1
-			self.locations.append((dir_, index_int))
+			locations.append((dir_, index_int))
+		return locations
 
-		self.value = value
 
 	def getLocation(self) -> str:
 		return self.location
