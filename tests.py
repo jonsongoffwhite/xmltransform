@@ -35,6 +35,8 @@ class TestTransformParse(unittest.TestCase):
 
 class TestTransformInstructions(unittest.TestCase):
 
+	maxDiff = 1000
+
 	test_rename_xml_input = '<memory> <mailbox path="/var/spool/mail/almaster"/> </memory>'
 	test_rename_transform_input = '[rename, /memory[1]/mailbox[1], box]'
 	test_rename_expected_output = '<memory> <box path="/var/spool/mail/almaster"/> </memory>'
@@ -50,6 +52,10 @@ class TestTransformInstructions(unittest.TestCase):
 	test_append_xml_input = '<oopoyy><function/></oopoyy>'
 	test_append_transform_input = '[append, /oopoyy[1], <gap/>]'
 	test_append_expected_output = '<oopoyy><function/><gap/></oopoyy>'
+
+	test_insert_after_xml_input = '<Tests><Test type="Add element"><One>1</One><One>2</One><One>2.1</One><One>3</One></Test><Test type="Delete element"><Two>1</Two><Two>3</Two></Test><Test type="Move element"><Three>2</Three><Three>1</Three><Three>3</Three></Test></Tests>'
+	test_insert_after_transform_input = '[insert-after, /Tests[1]/Test[2],<Test><Seven>This is the third sentence.</Seven></Test>]'
+	test_insert_after_expected_output = '<Tests><Test type="Add element"><One>1</One><One>2</One><One>2.1</One><One>3</One></Test><Test type="Delete element"><Two>1</Two><Two>3</Two></Test><Test><Seven>This is the third sentence.</Seven></Test><Test type="Move element"><Three>2</Three><Three>1</Three><Three>3</Three></Test></Tests>'
 
 	def _transform_test(self, xml_input, transform_input, xml_output):
 		parser = TransformParser(transform_input)
@@ -74,7 +80,7 @@ class TestTransformInstructions(unittest.TestCase):
 		self._transform_test(self.test_append_xml_input, self.test_append_transform_input, self.test_append_expected_output)
 
 	def test_insert_after(self):
-		pass
+		self._transform_test(self.test_insert_after_xml_input, self.test_insert_after_transform_input, self.test_insert_after_expected_output)
 
 	def test_move_first(self):
 		pass

@@ -42,14 +42,21 @@ class TransformParser:
 	def _create_instructions(self, instruction_strings) -> list:
 		ins = []
 		for ins_str in instruction_strings:
+			# This is all bad because of text
 			# Remove square brackets
 			ins_str = ins_str[1:-1]
-			# Split by comma
-			ins_param_str = ins_str.replace(" ", "").split(',')
+			# Split on first 2 so won't interfere with text, maybe issue with MOVE?
+			ins_param_str = ins_str.split(',', 2)
+			# Remove space if at start
+			new_param_str = []
+			for elem in ins_param_str:
+				if len(elem) > 0 and elem[0] == ' ':
+					elem = elem[1:]
+				new_param_str.append(elem)
 			# Create Instruction
-			command = Command.get_command_from_str(ins_param_str[0])
-			location = ins_param_str[1]
-			value = ins_param_str[2]
+			command = Command.get_command_from_str(new_param_str[0])
+			location = new_param_str[1]
+			value = new_param_str[2]
 			ins.append(Instruction(command, location, value))
 
 		return ins
@@ -89,6 +96,7 @@ class TransformParser:
 					curr.attrib[final_loc[0][1:]] = ins.value
 				elif final_loc[0][-2:] == '()' and final_loc[0][:-2] == 'text':
 					curr.text = ins.value
+				# add support for comment
 
 			elif ins.command == Command.APPEND_FIRST:
 				curr = root
@@ -106,6 +114,20 @@ class TransformParser:
 					curr = curr.findall(loc[0])[loc[1]]
 				element = ElementTree.fromstring(ins.value)
 				curr.append(element)
+
+			elif ins.command == Command.INSERT_AFTER:
+				# Insert special case as it refers to node on same level
+				curr = root
+				# Skip root
+				# Get to parent node
+				for loc in ins.locations[1:-1]:
+					curr = curr.findall(loc[0])[loc[1]]
+				# Get index of ins.locations[-1][1]th occurrence of ins.locations[-1][0]
+				indices = [i for i, x in enumerate(curr) if x.tag == ins.locations[-1][0]]
+				new_index = indices[ins.locations[-1][1]] + 1
+				element = ElementTree.fromstring(ins.value)
+				curr.insert(new_index, element)
+
 
 
 		return xmlparser.get_string()
