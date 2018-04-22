@@ -77,7 +77,9 @@ class TestTransformInstructions(unittest.TestCase):
 
 	test_rename_attribute_xml_input = '<memory> <mailbox path="/var/spool/mail/almaster"/> </memory>'
 	test_rename_attribute_transform_input = '[rename, /memory[1]/mailbox[1]/@path, route]'
-	test_rename_attribute_xml_input = '<memory> <mailbox route="/var/spool/mail/almaster"/> </memory>'
+	test_rename_attribute_expected_output = '<memory> <mailbox route="/var/spool/mail/almaster"/> </memory>'
+
+
 
 	def _transform_test(self, xml_input, transform_input, xml_output):
 		parser = TransformParser(transform_input)
@@ -115,6 +117,20 @@ class TestTransformInstructions(unittest.TestCase):
 
 	def test_two(self):
 		self._transform_test(self.test_two_xml_input, self.test_two_transform_input, self.test_two_expected_output)
+
+	def test_rename_attribute(self):
+		self._transform_test(self.test_rename_attribute_xml_input, self.test_rename_attribute_transform_input, self.test_rename_attribute_expected_output)
+
+	def test_update_indexed_text(self):
+		pass
+
+	def test_move_after_indexed_text(self):
+		pass
+
+	def test_remove_indexed_text(self):
+		pass
+
+
 
 class TestMultipleTransformInstructions(unittest.TestCase):
 

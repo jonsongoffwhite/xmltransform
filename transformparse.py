@@ -38,17 +38,9 @@ class TransformParser:
 			# even if some valid
 			return []
 
-		logging.basicConfig( stream=sys.stderr )
-		logging.getLogger( "SomeTest.testSomething" ).setLevel( logging.DEBUG )
-		log= logging.getLogger( "SomeTest.testSomething" )
-		log.debug("******ELEMS: " + str(elems) + " **************")
 		return elems
 
 	def _create_instructions(self, instruction_strings) -> list:
-
-		logging.basicConfig( stream=sys.stderr )
-		logging.getLogger( "SomeTest.testSomething" ).setLevel( logging.DEBUG )
-		log= logging.getLogger( "SomeTest.testSomething" )
 
 		ins = []
 		for ins_str in instruction_strings:
@@ -66,7 +58,6 @@ class TransformParser:
 				new_param_str.append(elem)
 			# Create Instruction
 			command = Command.get_command_from_str(new_param_str[0])
-			log.debug("*****NEW PARAM STR: " + str(new_param_str)+ "   ********")
 			location = new_param_str[1]
 
 			# Check, as remove only has 2 params
@@ -85,10 +76,6 @@ class TransformParser:
 		return instructions
 
 	def apply(self, instructions: list, xml_string: str) -> str:
-		logging.basicConfig( stream=sys.stderr )
-		logging.getLogger( "SomeTest.testSomething" ).setLevel( logging.DEBUG )
-		log= logging.getLogger( "SomeTest.testSomething" )
-
 		xmlparser = XMLParser(xml_string)
 		tree = xmlparser.get_tree()
 		for ins in instructions:
@@ -98,9 +85,19 @@ class TransformParser:
 				# Can also rename attribs
 				curr = root
 				# Skip root
-				for loc in ins.locations[1:]:
+				for loc in ins.locations[1:-1]:
 					curr = curr.findall(loc[0])[loc[1]]
-				curr.tag = ins.value
+
+				if ins.has_attribute_destination():
+					# Replace old key with new
+					old_key = ins.locations[-1][0][1:]
+					old_value = curr.attrib.pop(old_key)
+					curr.attrib[ins.value] = old_value
+				else:
+					# Advance one more step into tree
+					final_loc = ins.locations[-1]
+					curr = curr.findall(final_loc[0])[final_loc[1]]
+					curr.tag = ins.value
 
 			elif ins.command == Command.UPDATE:
 				# Either starts with @ indicating attribute,
@@ -110,9 +107,10 @@ class TransformParser:
 				# Skip root
 				for loc in ins.locations[1:-1]:
 					curr = curr.findall(loc[0])[loc[1]]
-				if final_loc[0][0] == '@':
+				if ins.has_attribute_destination():
 					curr.attrib[final_loc[0][1:]] = ins.value
-				elif final_loc[0][-2:] == '()' and final_loc[0][:-2] == 'text':
+				elif ins.has_contained_destination():
+					# Iterate through to get correct contained index
 					curr.text = ins.value
 				# add support for comment
 
@@ -222,16 +220,18 @@ class Instruction:
 		else:
 			self.value = value
 
+
 	def _split_location(self, location_str) -> list:
 		location_strs = location_str.split("/")[1:] 
 		locations = []
 
 		for location in location_strs:
+			# Root case
 			if len(location) == 0:
 				dir_ = ""
 				index_int = -1
 			# Final location might be special
-			elif location[0] == '@' or location[-2:] == '()':
+			elif location[0] == '@':# or location[-2:] == '()':
 				dir_ = location
 				index_int = -1
 			else:
@@ -244,7 +244,17 @@ class Instruction:
 					index_str = location.split('[')[1].split(']')[0]
 					index_int = int(index_str)-1
 			locations.append((dir_, index_int))
+
 		return locations
+
+	def has_attribute_destination(self):
+		return self.locations[-1][0][0] == '@'
+
+	def has_contained_destination(self):
+		return self.locations[-1][-2:][0] == '()'
+
+	def has_text_destination(self):
+		return self.locations[-1][-2:][0] == 'text()'
 
 
 	def getLocation(self) -> str:
