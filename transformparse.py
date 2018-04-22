@@ -109,9 +109,24 @@ class TransformParser:
 					curr = curr.findall(loc[0])[loc[1]]
 				if ins.has_attribute_destination():
 					curr.attrib[final_loc[0][1:]] = ins.value
-				elif ins.has_contained_destination():
+				elif ins.has_text_destination():
 					# Iterate through to get correct contained index
 					curr.text = ins.value
+					texts = []
+					# Get texts only at current level inside curr
+					# (node, string, isTail)
+					for node in curr.iter():
+						if node == curr:
+							texts.append((node, node.text, False))
+						else:
+							texts.append((node, node.tail, True))
+					relevant_segment = texts[final_loc[1]]
+					
+					if relevant_segment[2]:
+						relevant_segment[0].tail = ins.value
+					else:
+						relevant_segment[0].text = ins.value
+
 				# add support for comment
 
 			elif ins.command == Command.APPEND_FIRST:
