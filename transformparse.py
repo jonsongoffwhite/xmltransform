@@ -76,6 +76,11 @@ class TransformParser:
 		return instructions
 
 	def apply(self, instructions: list, xml_string: str) -> str:
+
+		logging.basicConfig( stream=sys.stderr )
+		logging.getLogger( "SomeTest.testSomething" ).setLevel( logging.DEBUG )
+		log= logging.getLogger( "SomeTest.testSomething" )
+
 		xmlparser = XMLParser(xml_string)
 		tree = xmlparser.get_tree()
 		for ins in instructions:
@@ -111,7 +116,6 @@ class TransformParser:
 					curr.attrib[final_loc[0][1:]] = ins.value
 				elif ins.has_text_destination():
 					# Iterate through to get correct contained index
-					curr.text = ins.value
 					texts = []
 					# Get texts only at current level inside curr
 					# (node, string, isTail)
@@ -121,7 +125,7 @@ class TransformParser:
 						else:
 							texts.append((node, node.tail, True))
 					relevant_segment = texts[final_loc[1]]
-					
+
 					if relevant_segment[2]:
 						relevant_segment[0].tail = ins.value
 					else:

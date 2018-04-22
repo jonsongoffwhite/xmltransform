@@ -79,9 +79,9 @@ class TestTransformInstructions(unittest.TestCase):
 	test_rename_attribute_transform_input = '[rename, /memory[1]/mailbox[1]/@path, route]'
 	test_rename_attribute_expected_output = '<memory> <mailbox route="/var/spool/mail/almaster"/> </memory>'
 
-	test_update_indexed_text_xml_input = '<a><b>Hello World!</b><c></c></a>'
-	test_update_indexed_text_transform_input = '[update, /a[1]/b[1]/text()[1], New Text!]'
-	test_update_indexed_text_expected_output = '<a><b>New Text!</b><c></c></a>'
+	test_update_indexed_text_xml_input = '<a><b>Hello World!<d></d>Bye World!</b><c></c></a>'
+	test_update_indexed_text_transform_input = '[update, /a[1]/b[1]/text()[2], New Text!]'
+	test_update_indexed_text_expected_output = '<a><b>Hello World!<d></d>New Text!</b><c></c></a>'
 
 
 
