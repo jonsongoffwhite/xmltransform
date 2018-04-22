@@ -28,7 +28,8 @@ class TransformParser:
 
 			curr_str += c
 
-			if len(stack) == 0:
+			# Need to account for other whitespace characters
+			if len(stack) == 0 and c != '\n':
 				elems.append(curr_str)
 				curr_str = ""
 
@@ -37,9 +38,18 @@ class TransformParser:
 			# even if some valid
 			return []
 
+		logging.basicConfig( stream=sys.stderr )
+		logging.getLogger( "SomeTest.testSomething" ).setLevel( logging.DEBUG )
+		log= logging.getLogger( "SomeTest.testSomething" )
+		log.debug("******ELEMS: " + str(elems) + " **************")
 		return elems
 
 	def _create_instructions(self, instruction_strings) -> list:
+
+		logging.basicConfig( stream=sys.stderr )
+		logging.getLogger( "SomeTest.testSomething" ).setLevel( logging.DEBUG )
+		log= logging.getLogger( "SomeTest.testSomething" )
+
 		ins = []
 		for ins_str in instruction_strings:
 			# This is all bad because of text
@@ -56,6 +66,7 @@ class TransformParser:
 				new_param_str.append(elem)
 			# Create Instruction
 			command = Command.get_command_from_str(new_param_str[0])
+			log.debug("*****NEW PARAM STR: " + str(new_param_str)+ "   ********")
 			location = new_param_str[1]
 
 			# Check, as remove only has 2 params
@@ -84,6 +95,7 @@ class TransformParser:
 			root = tree.getroot()
 
 			if ins.command == Command.RENAME:
+				# Can also rename attribs
 				curr = root
 				# Skip root
 				for loc in ins.locations[1:]:
@@ -174,10 +186,6 @@ class TransformParser:
 				rem = curr.findall(loc[0])[loc[1]]
 				parent.remove(rem)
 
-
-
-
-
 		return xmlparser.get_string()
 
 
@@ -241,3 +249,6 @@ class Instruction:
 
 	def getLocation(self) -> str:
 		return self.location
+
+	def __str__(self) -> str:
+		return "Command: " + str(self.command) + ", location: " + str(self.location) + ", value: " + str(self.value)

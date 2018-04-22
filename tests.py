@@ -1,6 +1,8 @@
 import unittest
 from transformparse import TransformParser
 import xml.etree.ElementTree as ElementTree
+import logging
+import sys
 
 class TestTransformParse(unittest.TestCase):
 
@@ -69,6 +71,14 @@ class TestTransformInstructions(unittest.TestCase):
 	test_remove_transform_input = '[remove, /a[1]/b[1]]'
 	test_remove_expected_output = '<a><c></c></a>'
 
+	test_two_xml_input = '<oopoyy><function/></oopoyy>'
+	test_two_transform_input = '[append, /oopoyy[1], <gap/>][remove, /function[1]]'
+	test_two_expected_output = '<oopoyy><gap/></oopoyy>'
+
+	test_rename_attribute_xml_input = '<memory> <mailbox path="/var/spool/mail/almaster"/> </memory>'
+	test_rename_attribute_transform_input = '[rename, /memory[1]/mailbox[1]/@path, route]'
+	test_rename_attribute_xml_input = '<memory> <mailbox route="/var/spool/mail/almaster"/> </memory>'
+
 	def _transform_test(self, xml_input, transform_input, xml_output):
 		parser = TransformParser(transform_input)
 		instructions = parser.parse()
@@ -102,6 +112,30 @@ class TestTransformInstructions(unittest.TestCase):
 
 	def test_remove(self):
 		self._transform_test(self.test_remove_xml_input, self.test_remove_transform_input, self.test_remove_expected_output)
+
+	def test_two(self):
+		self._transform_test(self.test_two_xml_input, self.test_two_transform_input, self.test_two_expected_output)
+
+class TestMultipleTransformInstructions(unittest.TestCase):
+
+	maxDiff = 1000
+
+	def test_00(self):
+
+		with open('tests/test_00_diff.result', 'r') as transform_file:
+			transform_input = transform_file.read()
+
+		xml_input = ElementTree.parse('tests/test_00_1.xml')
+
+		expected_xml_root = ElementTree.parse('tests/test_00_2.xml').getroot()
+		expected_xml_output = ElementTree.tostring(expected_xml_root, encoding="unicode")
+
+		parser = TransformParser(transform_input)
+		instructions = parser.parse()
+		output = parser.apply(instructions, ElementTree.tostring(xml_input.getroot(), encoding="unicode"))
+
+		self.assertEqual(output, expected_xml_output)
+
 
 if __name__ == '__main__':
 	unittest.main()

@@ -1,0 +1,15 @@
+<memory>
+  <box path="/var/spool/mail/almaster"/>
+  <server-socket port="7776" recipe="pia.PDA"/>
+  <server-socket port="7797" recipe="proxy.Web proxy"/>
+  <email_addr mine="yes">almaster@logilab.org</email_addr>
+  <junkbuster-method val="18">
+   <newson/>
+  </junkbuster-method>
+  <spoken-languages>
+   <language name="english" code="fr" />
+   <language code="it" name="italian" />
+  </spoken-languages>
+  <test>
+  </test>
+</memory>
