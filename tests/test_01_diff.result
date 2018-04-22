@@ -1,0 +1,4 @@
+[insert-after, /memory[1]/spoken-languages[1],
+<test/>
+]
+[update, /memory[1]/server-socket[2]/@port, 7779]

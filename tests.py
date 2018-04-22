@@ -1,6 +1,7 @@
 import unittest
 from transformparse import TransformParser
 import xml.etree.ElementTree as ElementTree
+from xml_compare import xml_compare
 import logging
 import sys
 
@@ -88,12 +89,12 @@ class TestTransformInstructions(unittest.TestCase):
 	def _transform_test(self, xml_input, transform_input, xml_output):
 		parser = TransformParser(transform_input)
 		instructions = parser.parse()
-		output = parser.apply(instructions, xml_input)
+		output_tree = parser.apply(instructions, xml_input)
+		output_root = output_tree.getroot()
 		# Normalise expected
 		ex_root = ElementTree.fromstring(xml_output)
-		expected = ElementTree.tostring(ex_root, encoding="unicode")
 
-		self.assertEqual(output, expected)
+		self.assertTrue(xml_compare(output_root, ex_root))
 
 	def test_rename(self):
 		self._transform_test(self.test_rename_xml_input, self.test_rename_transform_input, self.test_rename_expected_output)
@@ -140,21 +141,28 @@ class TestMultipleTransformInstructions(unittest.TestCase):
 
 	maxDiff = 1000
 
-	def test_00(self):
-
-		with open('tests/test_00_diff.result', 'r') as transform_file:
+	def _file_test(self, xml_filename, transform_filename, expected_filename):
+		with open(transform_filename, 'r') as transform_file:
 			transform_input = transform_file.read()
 
-		xml_input = ElementTree.parse('tests/test_00_1.xml')
+		xml_input = ElementTree.parse(xml_filename)
 
-		expected_xml_root = ElementTree.parse('tests/test_00_2.xml').getroot()
-		expected_xml_output = ElementTree.tostring(expected_xml_root, encoding="unicode")
+		expected_xml_root = ElementTree.parse(expected_filename).getroot()
 
 		parser = TransformParser(transform_input)
 		instructions = parser.parse()
-		output = parser.apply(instructions, ElementTree.tostring(xml_input.getroot(), encoding="unicode"))
+		output_tree = parser.apply(instructions, ElementTree.tostring(xml_input.getroot(), encoding="unicode"))
 
-		self.assertEqual(output, expected_xml_output)
+		output_root = output_tree.getroot()
+
+
+		self.assertTrue(xml_compare(output_root, expected_xml_root))
+
+	def test_00(self):
+		self._file_test('tests/test_00_1.xml', 'tests/test_00_diff.result', 'tests/test_00_2.xml')
+
+	def test_01(self):
+		self._file_test('tests/test_01_1.xml', 'tests/test_01_diff.result', 'tests/test_01_2.xml')
 
 
 if __name__ == '__main__':

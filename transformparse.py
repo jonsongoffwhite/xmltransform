@@ -42,11 +42,16 @@ class TransformParser:
 
 	def _create_instructions(self, instruction_strings) -> list:
 
+
+		logging.basicConfig( stream=sys.stderr )
+		logging.getLogger( "SomeTest.testSomething" ).setLevel( logging.DEBUG )
+		log= logging.getLogger( "SomeTest.testSomething" )
+
 		ins = []
 		for ins_str in instruction_strings:
 			# This is all bad because of text
 			# Remove square brackets
-			ins_str = ins_str[1:-1]
+			ins_str = ins_str.lstrip()[1:-1]
 			# Split on first 2 so won't interfere with text
 			# Only splits on 1 remove
 			ins_param_str = ins_str.split(',', 2)
@@ -203,7 +208,7 @@ class TransformParser:
 				rem = curr.findall(loc[0])[loc[1]]
 				parent.remove(rem)
 
-		return xmlparser.get_string()
+		return tree
 
 
 
@@ -237,7 +242,7 @@ class Instruction:
 		if command == Command.MOVE_FIRST or command == Command.MOVE_AFTER:
 			self.value = self._split_location(value)
 		else:
-			self.value = value
+			self.value = value.lstrip()
 
 
 	def _split_location(self, location_str) -> list:
@@ -280,4 +285,4 @@ class Instruction:
 		return self.location
 
 	def __str__(self) -> str:
-		return "Command: " + str(self.command) + ", location: " + str(self.location) + ", value: " + str(self.value)
+		return str(self.__dict__)
