@@ -163,10 +163,41 @@ class TransformParser:
 				for loc in ins.locations[1:-1]:
 					curr = curr.findall(loc[0])[loc[1]]
 				# Get index of ins.locations[-1][1]th occurrence of ins.locations[-1][0]
-				indices = [i for i, x in enumerate(curr) if x.tag == ins.locations[-1][0]]
-				new_index = indices[ins.locations[-1][1]] + 1
+				final_loc = ins.locations[-1]
+
 				element = ElementTree.fromstring(ins.value)
-				curr.insert(new_index, element)
+
+				if ins.has_text_destination():
+					# Find index of tag after text()[i]
+					# Insert there
+					texts = []
+					for node in curr.iter():
+						if node == curr:
+							texts.append((node, node.text, False))
+						else:
+							texts.append((node, node.tail, True))
+					relevant_segment = texts[final_loc[1]]
+
+					#  If it's a tail value, we need node after
+					#  If there isn't one after, we put it last
+					if relevant_segment[2]:
+						node_before = relevant_segment[0]
+						node_i = list(curr).find(node_before)+1
+						if len(list(curr)) > (node_i + 1):
+							# Put it last
+							curr.append(element)
+						else:
+							curr.insert(node_i, element)
+					else:
+						# Put it first
+						curr.insert(0, element)
+
+				else:
+					indices = [i for i, x in enumerate(curr) if x.tag == ins.locations[-1][0]]
+					log.debug(str(ins))
+					log.debug(indices)
+					new_index = indices[ins.locations[-1][1]] + 1
+					curr.insert(new_index, element)
 
 			elif ins.command == Command.MOVE_FIRST:
 				curr = root
@@ -203,10 +234,27 @@ class TransformParser:
 				curr = root
 				for loc in ins.locations[1:-1]:
 					curr = curr.findall(loc[0])[loc[1]]
-				parent = curr
-				loc = ins.locations[-1]
-				rem = curr.findall(loc[0])[loc[1]]
-				parent.remove(rem)
+				# Iterate through to get correct contained index
+				if ins.has_text_destination():
+					texts = []
+					# Get texts only at current level inside curr
+					# (node, string, isTail)
+					for node in curr.iter():
+						if node == curr:
+							texts.append((node, node.text, False))
+						else:
+							texts.append((node, node.tail, True))
+					relevant_segment = texts[final_loc[1]]
+
+					if relevant_segment[2]:
+						relevant_segment[0].tail = None
+					else:
+						relevant_segment[0].text = None
+				else:
+					parent = curr
+					loc = ins.locations[-1]
+					rem = curr.findall(loc[0])[loc[1]]
+					parent.remove(rem)
 
 		return tree
 

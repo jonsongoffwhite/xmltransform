@@ -164,6 +164,9 @@ class TestMultipleTransformInstructions(unittest.TestCase):
 	def test_01(self):
 		self._file_test('tests/test_01_1.xml', 'tests/test_01_diff.result', 'tests/test_01_2.xml')
 
+	def test_02(self):
+		self._file_test('tests/test_02_1.xml', 'tests/test_02_diff.result', 'tests/test_02_2.xml')
+
 
 if __name__ == '__main__':
 	unittest.main()
