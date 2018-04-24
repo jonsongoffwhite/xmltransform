@@ -3,6 +3,7 @@ from xmlparse import XMLParser
 import xml.etree.ElementTree as ElementTree
 import logging
 import sys
+import tree_operations as to
 
 class TransformParser:
 
@@ -92,127 +93,54 @@ class TransformParser:
             root = tree.getroot()
 
             if ins.command == Command.RENAME:
-                # Can also rename attribs
-                curr = root
-                # Skip root
-                for loc in ins.locations[1:-1]:
-                    curr = curr.findall(loc[0])[loc[1]]
-
                 if ins.has_attribute_destination():
-                    # Replace old key with new
-                    old_key = ins.locations[-1][0][1:]
-                    old_value = curr.attrib.pop(old_key)
-                    curr.attrib[ins.value] = old_value
+                    # Don't really want to pass attrib name
+                    old_attrib_name = ins.locations[-1][0][1:]
+                    log.debug(old_attrib_name)
+                    to.get_parent_and_apply(root, ins.locations, to.transform_rename_attrib, new_name=ins.value, attrib=old_attrib_name)
                 else:
-                    # Advance one more step into tree
-                    final_loc = ins.locations[-1]
-                    curr = curr.findall(final_loc[0])[final_loc[1]]
-                    curr.tag = ins.value
+                    to.get_node_and_apply(root, ins.locations, to.transform_rename_tag, new_name=ins.value)
 
             elif ins.command == Command.UPDATE:
                 # Either starts with @ indicating attribute,
                 # or is text() indicating text value
-                curr = root
-                final_loc = ins.locations[-1]
-                # Skip root
-                for loc in ins.locations[1:-1]:
-                    curr = curr.findall(loc[0])[loc[1]]
                 if ins.has_attribute_destination():
-                    curr.attrib[final_loc[0][1:]] = ins.value
+                    attrib_name = ins.locations[-1][0][1:]
+                    to.get_parent_and_apply(root, ins.locations, to.transform_update_attrib, attrib=attrib_name, value=ins.value)
                 elif ins.has_text_destination():
-                    # Iterate through to get correct contained index
-                    texts = []
-                    # Get texts only at current level inside curr
-                    # (node, string, isTail)
-                    for node in curr.iter():
-                        if node == curr:
-                            texts.append((node, node.text, False))
-                        else:
-                            texts.append((node, node.tail, True))
-                    relevant_segment = texts[final_loc[1]]
-
-                    if relevant_segment[2]:
-                        relevant_segment[0].tail = ins.value
-                    else:
-                        relevant_segment[0].text = ins.value
-
-                # add support for comment
+                    contained_name = ins.locations[-1][0][:-2] 
+                    index = ins.locations[-1][1]
+                    to.get_parent_and_apply(root, ins.locations, to.transform_update_contained, contained=contained_name, index=index, value=ins.value)  
+                    
 
             elif ins.command == Command.APPEND_FIRST:
-                curr = root
-                # Skip root
-                for loc in ins.locations[1:]:
-                    curr = curr.findall(loc[0])[loc[1]]
-                element = ElementTree.fromstring(ins.value)
-                # Append first
-                curr.insert(0, element)
+                to.get_node_and_apply(root, ins.locations, to.transform_append_first, value=ins.value)
 
             elif ins.command == Command.APPEND:
-                curr = root
-                # Skip root
-                for loc in ins.locations[1:]:
-                    curr = curr.findall(loc[0])[loc[1]]
-                element = ElementTree.fromstring(ins.value)
-                curr.append(element)
+                to.get_node_and_apply(root, ins.locations, to.transform_append, value=ins.value)
 
             elif ins.command == Command.INSERT_AFTER:
-                # Insert special case as it refers to node on same level
-                curr = root
-                # Skip root
-                # Get to parent node
-                for loc in ins.locations[1:-1]:
-                    curr = curr.findall(loc[0])[loc[1]]
-                # Get index of ins.locations[-1][1]th occurrence of ins.locations[-1][0]
-                final_loc = ins.locations[-1]
-
-                element = ElementTree.fromstring(ins.value)
-
                 if ins.has_text_destination():
                     # Find index of tag after text()[i]
                     # Insert there
-                    texts = []
-                    for node in curr.iter():
-                        if node == curr:
-                            texts.append((node, node.text, False))
-                        else:
-                            texts.append((node, node.tail, True))
-                    relevant_segment = texts[final_loc[1]]
-
-                    #  If it's a tail value, we need node after
-                    #  If there isn't one after, we put it last
-                    if relevant_segment[2]:
-                        node_before = relevant_segment[0]
-                        node_i = list(curr).find(node_before)+1
-                        if len(list(curr)) > (node_i + 1):
-                            # Put it last
-                            curr.append(element)
-                        else:
-                            curr.insert(node_i, element)
-                    else:
-                        # Put it first
-                        curr.insert(0, element)
+                    contained_name = ins.locations[-1][0][:-2]
+                    contained_index = ins.locations[-1][1]
+                    value = ins.value
+                    to.get_parent_and_apply(root, ins.locations, to.transform_insert_after_contained, contained_name=contained_name, contained_index=contained_index, value=value)
 
                 else:
-                    indices = [i for i, x in enumerate(curr) if x.tag == ins.locations[-1][0]]
-                    log.debug(str(ins))
-                    log.debug(indices)
-                    new_index = indices[ins.locations[-1][1]] + 1
-                    curr.insert(new_index, element)
-
+                    tag_name = ins.locations[-1][0]
+                    tag_index = ins.locations[-1][1] 
+                    value = ins.value
+                    to.get_parent_and_apply(root, ins.locations, to.transform_insert_after_tag, tag_name=tag_name, tag_index=tag_index, value=value)
+                    
             elif ins.command == Command.MOVE_FIRST:
-                curr = root
-                # Value is also location
-                for loc in ins.locations[1:-1]:
-                    curr = curr.findall(loc[0])[loc[1]]
-                src_parent = curr
-                src_loc = ins.locations[-1]
-                src = curr.findall(src_loc[0])[src_loc[1]]
-                curr = root
-                for loc in ins.value[1:]:
-                    curr = curr.findall(loc[0])[loc[1]]
-                dst = curr
-                src_parent.remove(src)
-                dst.insert(0, src)
+                # Pre parsed in Instruction constructor
+                new_location = ins.value
+                tree_root = root
+                src_name = ins.locations[-1][0]
+                src_index = ins.locations[-1][1]
+                to.get_parent_and_apply(root, ins.locations, to.transform_move_first, new_location=new_location, tree_root=tree_root, src_name=src_name, src_index=src_index)
 
             elif ins.command == Command.MOVE_AFTER:
                 curr = root

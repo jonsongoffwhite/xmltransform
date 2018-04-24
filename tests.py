@@ -40,6 +40,12 @@ class TestTransformInstructions(unittest.TestCase):
 
     maxDiff = 1000
 
+    logging.basicConfig( stream=sys.stderr )
+    logging.getLogger( "TestTransformInstructions" ).setLevel( logging.DEBUG )
+    log= logging.getLogger( "TestTransformInstructions" )
+
+
+
     test_rename_xml_input = '<memory> <mailbox path="/var/spool/mail/almaster"/> </memory>'
     test_rename_transform_input = '[rename, /memory[1]/mailbox[1], box]'
     test_rename_expected_output = '<memory> <box path="/var/spool/mail/almaster"/> </memory>'
@@ -93,6 +99,9 @@ class TestTransformInstructions(unittest.TestCase):
         output_root = output_tree.getroot()
         # Normalise expected
         ex_root = ElementTree.fromstring(xml_output)
+
+        self.log.debug(ElementTree.tostring(ex_root))
+        self.log.debug(ElementTree.tostring(output_root))
 
         self.assertTrue(xml_compare(output_root, ex_root))
 
