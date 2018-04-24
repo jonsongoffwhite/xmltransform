@@ -151,31 +151,10 @@ class TransformParser:
 
                 
             elif ins.command == Command.REMOVE:
-                curr = root
-                for loc in ins.locations[1:-1]:
-                    curr = curr.findall(loc[0])[loc[1]]
-                # Iterate through to get correct contained index
                 if ins.has_text_destination():
-                    texts = []
-                    # Get texts only at current level inside curr
-                    # (node, string, isTail)
-                    for node in curr.iter():
-                        if node == curr:
-                            texts.append((node, node.text, False))
-                        else:
-                            texts.append((node, node.tail, True))
-                    relevant_segment = texts[final_loc[1]]
-
-                    if relevant_segment[2]:
-                        relevant_segment[0].tail = None
-                    else:
-                        relevant_segment[0].text = None
+                    to.get_parent_and_apply(root, ins.locations, to.transform_remove_contained, contained_name=ins.locations[-1][0][:-2], contained_index=ins.locations[-1][1])
                 else:
-                    parent = curr
-                    loc = ins.locations[-1]
-                    rem = curr.findall(loc[0])[loc[1]]
-                    parent.remove(rem)
-
+                   to.get_parent_and_apply(root, ins.locations, to.transform_remove_tag, rem_name=ins.locations[-1][0], rem_index=ins.locations[-1][1])
         return tree
 
 

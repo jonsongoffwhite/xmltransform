@@ -78,6 +78,10 @@ class TestTransformInstructions(unittest.TestCase):
     test_remove_transform_input = '[remove, /a[1]/b[1]]'
     test_remove_expected_output = '<a><c></c></a>'
 
+    test_remove_indexed_text_xml_input = '<a><b>Not This</b><c>Hello</c></a>'
+    test_remove_indexed_text_transform_input = '[remove, /a[1]/c[1]/text()[1]]'
+    test_remove_indexed_text_expected_output = '<a><b>Not This</b><c></c></a>'
+
     test_two_xml_input = '<oopoyy><function/></oopoyy>'
     test_two_transform_input = '[append, /oopoyy[1], <gap/>][remove, /function[1]]'
     test_two_expected_output = '<oopoyy><gap/></oopoyy>'
@@ -93,6 +97,9 @@ class TestTransformInstructions(unittest.TestCase):
 
 
     def _transform_test(self, xml_input, transform_input, xml_output):
+        
+        self.log.debug("Initial XML: " + xml_input)
+
         parser = TransformParser(transform_input)
         instructions = parser.parse()
         output_tree = parser.apply(instructions, xml_input)
@@ -142,7 +149,7 @@ class TestTransformInstructions(unittest.TestCase):
         pass
 
     def test_remove_indexed_text(self):
-        pass
+        self._transform_test(self.test_remove_indexed_text_xml_input, self.test_remove_indexed_text_transform_input, self.test_remove_indexed_text_expected_output)
 
 
 

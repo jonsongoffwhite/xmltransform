@@ -190,7 +190,18 @@ def transform_move_after(curr, **kwargs):
     src_parent.remove(src)
     dst.insert(new_index, src)
 
+''' REMOVE '''
 
+# Parent transformation
+def transform_remove_tag(curr, **kwargs):
+    rem_name = kwargs['rem_name']
+    rem_index = kwargs['rem_index']
+    child = curr.findall(rem_name)[rem_index]
+    curr.remove(child)
 
+# Parent transformation
+def transform_remove_contained(curr, **kwargs):
+    contained_name = kwargs['contained_name']
+    contained_index = kwargs['contained_index']
+    set_text_at_index(curr, contained_name, contained_index, None)
 
-    
