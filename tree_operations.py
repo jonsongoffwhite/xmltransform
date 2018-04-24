@@ -144,18 +144,10 @@ def transform_insert_after_tag(curr, **kwargs):
 # TODO: Implement for contained
 # Parent transformation
 def transform_move_first(curr, **kwargs):
-    logging.basicConfig( stream=sys.stderr )
-    logging.getLogger( "SomeTest.testSomething" ).setLevel( logging.DEBUG )
-    log= logging.getLogger( "SomeTest.testSomething" )
-    
-
-
     new_location = kwargs['new_location']
     tree_root = kwargs['tree_root']
     src_name = kwargs['src_name']
     src_index = kwargs['src_index']
-
-    log.debug(str(new_location))
 
     src_parent = curr
     src = curr.findall(src_name)[src_index]
@@ -170,12 +162,34 @@ def transform_move_first(curr, **kwargs):
     dst.insert(0, src)
 
 
-''' MOVE '''
+''' MOVE_AFTER '''
 
 # TODO: Implement for contained
 # Parent transformation
-def transform_move(curr, **kwargs):
-    pass
+def transform_move_after(curr, **kwargs):
+    new_location = kwargs['new_location']
+    tree_root = kwargs['tree_root']
+    src_name = kwargs['src_name']
+    src_index = kwargs['src_index']
+
+    src_parent = curr
+    src = curr.findall(src_name)[src_index]
+
+    node = tree_root 
+    # Omit last location, as it is at same level
+    for loc in new_location[1:-1]:
+       node = node.findall(loc[0])[loc[1]]
+
+    dst = node 
+    dst_before_name = new_location[-1][0]
+    dst_before_index = new_location[-1][1] 
+
+    indices = [i for i, x in enumerate(dst) if x.tag == dst_before_name]
+    new_index = indices[dst_before_index] 
+
+    src_parent.remove(src)
+    dst.insert(new_index, src)
+
 
 
 

@@ -143,21 +143,13 @@ class TransformParser:
                 to.get_parent_and_apply(root, ins.locations, to.transform_move_first, new_location=new_location, tree_root=tree_root, src_name=src_name, src_index=src_index)
 
             elif ins.command == Command.MOVE_AFTER:
-                curr = root
-                for loc in ins.locations[1:-1]:
-                    curr = curr.findall(loc[0])[loc[1]]
-                src_parent = curr
-                src_loc = ins.locations[-1]
-                src = curr.findall(src_loc[0])[src_loc[1]]
-                curr = root
-                for loc in ins.value[1:-1]:
-                    curr = curr.findall(loc[0])[loc[1]]
-                dst = curr
-                indices = [i for i, x in enumerate(dst) if x.tag == ins.value[-1][0]]
-                new_index = indices[ins.value[-1][1]] + 1
-                src_parent.remove(src)
-                dst.insert(new_index, src)
+                new_location = ins.value
+                tree_root = root
+                src_name = ins.locations[-1][0]
+                src_index = ins.locations[-1][1]
+                to.get_parent_and_apply(root, ins.locations, to.transform_move_after, new_location=new_location, tree_root=tree_root, src_name=src_name, src_index=src_index)
 
+                
             elif ins.command == Command.REMOVE:
                 curr = root
                 for loc in ins.locations[1:-1]:
