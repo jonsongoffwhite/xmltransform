@@ -45,6 +45,19 @@ def set_text_at_index(par, contained_name, contained_index, new_text):
     else:
         relevant_segment[0].text = new_text
 
+def get_text_at_index(par, contained_name, contained_index) -> str:
+    texts = []
+    for node in par.iter():
+        if node == par:
+            texts.append((node, node.text, False))
+        else:
+            texts.append((node, node.tail, True))
+    relevant_segment = texts[contained_index]
+    if relvant_segment[2]:
+        return relevant_segment[0].tail
+    else:
+        return relevant_segment[0].text
+
 
 '''
 For use with INSERT_AFTER and MOVE_AFTER
@@ -65,12 +78,12 @@ def insert_node_after_text_at_index(par, contained_name, contained_index, node_t
         node_i = list(curr).find(node_before)+1
         if len(list(curr)) > (node_i + 1):
             # Put it last
-            par.append(element)
+            par.append(node_to_insert)
         else:
-            par.insert(node_i, element)
+            par.insert(node_i, node_to_insert)
     else:
         # Put it first
-        par.insert(0, element)
+        par.insert(0, node_to_insert)
 
 ''' RENAME '''
 
@@ -143,7 +156,7 @@ def transform_insert_after_tag(curr, **kwargs):
 
 # TODO: Implement for contained
 # Parent transformation
-def transform_move_first(curr, **kwargs):
+def transform_move_first_tag(curr, **kwargs):
     new_location = kwargs['new_location']
     tree_root = kwargs['tree_root']
     src_name = kwargs['src_name']
@@ -161,12 +174,16 @@ def transform_move_first(curr, **kwargs):
     src_parent.remove(src)
     dst.insert(0, src)
 
+# Parent transformation
+#def transform_move_first_contained(curr, **kwargs):
+#    contained_name = kwargs['contained_name']
+#    contained_index = kwargs['contained_index']
 
 ''' MOVE_AFTER '''
 
 # TODO: Implement for contained
 # Parent transformation
-def transform_move_after(curr, **kwargs):
+def transform_move_after_tag(curr, **kwargs):
     new_location = kwargs['new_location']
     tree_root = kwargs['tree_root']
     src_name = kwargs['src_name']
@@ -189,6 +206,28 @@ def transform_move_after(curr, **kwargs):
 
     src_parent.remove(src)
     dst.insert(new_index, src)
+
+# Parent transformation
+def transform_move_after_contained(curr, **kwargs):
+    src_name = kwargs['src_name']
+    src_index = kwargs['src_index']
+    tree_root = kwargs['tree_root']
+    destination = kwargs['destination']
+
+    src_parent = curr
+    src = src_parent.findall(src_name)[src_index]
+
+    dst_parent = tree_root 
+    for loc in destination[1:-1]:
+        dst_parent = dst_parent.findall(loc[0])[loc[1]]
+    dst_contained_name = destination[-1][0][:-2]
+    dst_contained_index = destination[-1][1]
+
+    src_parent.remove(src)
+    insert_node_after_text_at_index(dst_parent, dst_contained_name, dst_contained_index, src)
+
+
+
 
 ''' REMOVE '''
 

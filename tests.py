@@ -94,6 +94,13 @@ class TestTransformInstructions(unittest.TestCase):
     test_update_indexed_text_transform_input = '[update, /a[1]/b[1]/text()[2], New Text!]'
     test_update_indexed_text_expected_output = '<a><b>Hello World!<d></d>New Text!</b><c></c></a>'
 
+    #test_move_first_indexed_text_xml_input = '<a><b>Not This</b><c>Hello</c></a>'
+    #test_move_first_indexed_text_transform_input = '[move-first, /a[1]/c[1]/text()[1], /a[1]]'
+    #test_move_first_indexed_text_expected_output = '<a>Hello<b>Not This</b><c></c></a>'
+
+    test_move_after_indexed_text_xml_input = '<a><b>Not This</b><c>Hello</c><d></d></a>'
+    test_move_after_indexed_text_transform_input = '[move-after, /a[1]/d[1], /a[1]/b[1]/text()[1]]'
+    test_move_after_indexed_text_expected_output = '<a><b>Not This<d></d></b><c>Hello</c></a>'
 
 
     def _transform_test(self, xml_input, transform_input, xml_output):
@@ -145,8 +152,12 @@ class TestTransformInstructions(unittest.TestCase):
     def test_update_indexed_text(self):
         self._transform_test(self.test_update_indexed_text_xml_input, self.test_update_indexed_text_transform_input, self.test_update_indexed_text_expected_output)
 
+    #def test_move_first_indexed_text(self):
+    #    self._transform_test(self.test_move_first_indexed_text_xml_input, self.test_move_first_indexed_text_transform_input, self.test_move_first_indexed_text_expected_output)
+
     def test_move_after_indexed_text(self):
         pass
+        self._transform_test(self.test_move_after_indexed_text_xml_input, self.test_move_after_indexed_text_transform_input, self.test_move_after_indexed_text_expected_output)
 
     def test_remove_indexed_text(self):
         self._transform_test(self.test_remove_indexed_text_xml_input, self.test_remove_indexed_text_transform_input, self.test_remove_indexed_text_expected_output)

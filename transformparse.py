@@ -140,14 +140,22 @@ class TransformParser:
                 tree_root = root
                 src_name = ins.locations[-1][0]
                 src_index = ins.locations[-1][1]
-                to.get_parent_and_apply(root, ins.locations, to.transform_move_first, new_location=new_location, tree_root=tree_root, src_name=src_name, src_index=src_index)
+                to.get_parent_and_apply(root, ins.locations, to.transform_move_first_tag, new_location=new_location, tree_root=tree_root, src_name=src_name, src_index=src_index)
 
             elif ins.command == Command.MOVE_AFTER:
-                new_location = ins.value
-                tree_root = root
-                src_name = ins.locations[-1][0]
-                src_index = ins.locations[-1][1]
-                to.get_parent_and_apply(root, ins.locations, to.transform_move_after, new_location=new_location, tree_root=tree_root, src_name=src_name, src_index=src_index)
+                log.debug(ins.has_contained_dest_as_value())
+                if ins.has_contained_dest_as_value():
+                    src_name = ins.locations[-1][0]
+                    src_index = ins.locations[-1][1]
+                    tree_root = root
+                    destination = ins.value
+                    to.get_parent_and_apply(root, ins.locations, to.transform_move_after_contained, src_name=src_name, src_index=src_index, tree_root=tree_root, destination=destination)
+                else:
+                    new_location = ins.value
+                    tree_root = root
+                    src_name = ins.locations[-1][0]
+                    src_index = ins.locations[-1][1]
+                    to.get_parent_and_apply(root, ins.locations, to.transform_move_after_tag, new_location=new_location, tree_root=tree_root, src_name=src_name, src_index=src_index)
 
                 
             elif ins.command == Command.REMOVE:
@@ -226,6 +234,15 @@ class Instruction:
 
     def has_text_destination(self):
         return self.locations[-1][-2:][0] == 'text()'
+
+    def has_contained_dest_as_value(self):
+        if self.command != Command.MOVE_AFTER and self.command != Command.INSERT_AFTER:
+            return False
+        
+        if len(self.value[-1][0]) > 2:
+            return self.value[-1][0][-2:] == '()'
+        else:
+            return False
 
 
     def getLocation(self) -> str:
