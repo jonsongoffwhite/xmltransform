@@ -135,12 +135,18 @@ class TransformParser:
                     to.get_parent_and_apply(root, ins.locations, to.transform_insert_after_tag, tag_name=tag_name, tag_index=tag_index, value=value)
                     
             elif ins.command == Command.MOVE_FIRST:
-                # Pre parsed in Instruction constructor
-                new_location = ins.value
-                tree_root = root
-                src_name = ins.locations[-1][0]
-                src_index = ins.locations[-1][1]
-                to.get_parent_and_apply(root, ins.locations, to.transform_move_first_tag, new_location=new_location, tree_root=tree_root, src_name=src_name, src_index=src_index)
+                if ins.has_attribute_destination():
+                    new_location = ins.value
+                    tree_root = root
+                    src_name = ins.locations[-1][0][1:]
+                    to.get_parent_and_apply(root, ins.locations, to.transform_move_first_attribute, new_location=new_location, tree_root=tree_root, src_name=src_name)
+                else:
+                    # Pre parsed in Instruction constructor
+                    new_location = ins.value
+                    tree_root = root
+                    src_name = ins.locations[-1][0]
+                    src_index = ins.locations[-1][1]
+                    to.get_parent_and_apply(root, ins.locations, to.transform_move_first_tag, new_location=new_location, tree_root=tree_root, src_name=src_name, src_index=src_index)
 
             elif ins.command == Command.MOVE_AFTER:
                 log.debug(ins.has_contained_dest_as_value())
