@@ -163,6 +163,7 @@ class TransformParser:
                     to.get_parent_and_apply(root, ins.locations, to.transform_remove_contained, contained_name=ins.locations[-1][0][:-2], contained_index=ins.locations[-1][1])
                 else:
                    to.get_parent_and_apply(root, ins.locations, to.transform_remove_tag, rem_name=ins.locations[-1][0], rem_index=ins.locations[-1][1])
+        tree.write('test_out.xml')
         return tree
 
 

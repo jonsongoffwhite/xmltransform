@@ -2,6 +2,11 @@ import xml.etree.ElementTree as ET
 import logging
 import sys
 
+logging.basicConfig( stream=sys.stderr )
+logging.getLogger( "tree_operations" ).setLevel( logging.DEBUG )
+log= logging.getLogger( "tree_operations" )
+
+
 '''
 Takes path array and finds node specified by path,
 from root.
@@ -58,25 +63,43 @@ def get_text_at_index(par, contained_name, contained_index) -> str:
     else:
         return relevant_segment[0].text
 
+def detach_apply_reattach(node, transformation):
+    pass
 
 '''
 For use with INSERT_AFTER and MOVE_AFTER
 '''
 def insert_node_after_text_at_index(par, contained_name, contained_index, node_to_insert):
+
+    log.debug("par: " + str(par))
+    log.debug("contained_name: " + contained_name)
+    log.debug("contained_index: " + str(contained_index))
+
+    log.debug(list(par))
+
     texts = []
     for node in par.iter():
         if node == par:
-            texts.append((node, node.text, False))
+            if node.text:
+                texts.append((node, node.text, False))
         else:
-            texts.append((node, node.tail, True))
+            if node.tail:
+                texts.append((node, node.tail, True))
+
+    log.debug("texts: " + str(texts))
+    for node in par.iter():
+        log.debug(node.text)
+        log.debug(node.tail)
     relevant_segment = texts[contained_index]
+    
+
 
     #  If it's a tail value, we need node after
     #  If there isn't one after, we put it last
     if relevant_segment[2]:
         node_before = relevant_segment[0]
-        node_i = list(curr).find(node_before)+1
-        if len(list(curr)) > (node_i + 1):
+        node_i = list(par).index(node_before)+1
+        if len(list(par)) > (node_i + 1):
             # Put it last
             par.append(node_to_insert)
         else:
@@ -217,11 +240,32 @@ def transform_move_after_contained(curr, **kwargs):
     src_parent = curr
     src = src_parent.findall(src_name)[src_index]
 
+    # Get the one before the src to reattach the tail,
+    # If there isn't one (i.e. it is first), attach as text to parent
+    # TODO: Clarify behaviour if there is already text there
+    
+    # No need to reattach as if moving a node after contained,
+    # there is no chance it will have text after it
+    before_actual_index = list(src_parent).index(src) - 1
+
+    if before_actual_index < 0:
+        src_parent.text = src.tail
+        src.tail = None
+    else:
+        log.debug(src.tail)
+        list(src_parent)[before_actual_index].tail = src.tail
+        src.tail = None
+
+    log.debug("root in t_m_a_c: " + str(list(tree_root)))
+
     dst_parent = tree_root 
     for loc in destination[1:-1]:
         dst_parent = dst_parent.findall(loc[0])[loc[1]]
     dst_contained_name = destination[-1][0][:-2]
     dst_contained_index = destination[-1][1]
+
+    log.debug("dst_parent: " + str(dst_parent))
+    log.debug("dst_parent_children: " + str(list(dst_parent)))
 
     src_parent.remove(src)
     insert_node_after_text_at_index(dst_parent, dst_contained_name, dst_contained_index, src)
@@ -236,6 +280,14 @@ def transform_remove_tag(curr, **kwargs):
     rem_name = kwargs['rem_name']
     rem_index = kwargs['rem_index']
     child = curr.findall(rem_name)[rem_index]
+    prev_index = list(curr).index(child) -1
+    if prev_index < 0:
+        curr.text = child.tail
+        child.tail = None
+    else:
+        list(curr)[prev_index].tail = curr.tail
+        child.tail = None
+
     curr.remove(child)
 
 # Parent transformation

@@ -102,20 +102,26 @@ class TestTransformInstructions(unittest.TestCase):
     test_move_after_indexed_text_transform_input = '[move-after, /a[1]/d[1], /a[1]/b[1]/text()[1]]'
     test_move_after_indexed_text_expected_output = '<a><b>Not This<d></d></b><c>Hello</c></a>'
 
+    oddity_0_xml_in = '<a>ii<LogilabXMLDIFFFAKETag /><b />moretext</a>'
+    oddity_0_transform_in = '[move-after, /a[1]/b[1], /a[1]/text()[2]]'
+    oddity_0_xml_out = '<a>ii<LogilabXMLDIFFFAKETag />moretext<b/></a>'
+
 
     def _transform_test(self, xml_input, transform_input, xml_output):
-        
-        self.log.debug("Initial XML: " + xml_input)
+        ex_root = ElementTree.fromstring(xml_output)
+
+        self.log.debug("\nex_root: " + str(list(ex_root)))
+
 
         parser = TransformParser(transform_input)
         instructions = parser.parse()
         output_tree = parser.apply(instructions, xml_input)
         output_root = output_tree.getroot()
         # Normalise expected
-        ex_root = ElementTree.fromstring(xml_output)
-
-        self.log.debug(ElementTree.tostring(ex_root))
-        self.log.debug(ElementTree.tostring(output_root))
+        
+        self.log.debug("\nInitial XML:  " + xml_input)
+        self.log.debug("\nExpected Out: " + str(ElementTree.tostring(ex_root, encoding="unicode")))
+        self.log.debug("\nActual Out:   " + str(ElementTree.tostring(output_root, encoding="unicode")))
 
         self.assertTrue(xml_compare(output_root, ex_root))
 
@@ -162,6 +168,9 @@ class TestTransformInstructions(unittest.TestCase):
     def test_remove_indexed_text(self):
         self._transform_test(self.test_remove_indexed_text_xml_input, self.test_remove_indexed_text_transform_input, self.test_remove_indexed_text_expected_output)
 
+    def test_oddity_0(self):
+        self._transform_test(self.oddity_0_xml_in, self.oddity_0_transform_in, self.oddity_0_xml_out)
+
 
 
 class TestMultipleTransformInstructions(unittest.TestCase):
@@ -193,6 +202,9 @@ class TestMultipleTransformInstructions(unittest.TestCase):
 
     def test_02(self):
         self._file_test('tests/test_02_1.xml', 'tests/test_02_diff.result', 'tests/test_02_2.xml')
+
+    def test_03(self):
+        self._file_test('tests/test_03_1.xml', 'tests/test_03_diff.result', 'tests/test_03_2.xml')
 
 
 if __name__ == '__main__':
