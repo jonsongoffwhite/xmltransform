@@ -19,7 +19,6 @@ def get_node_and_apply(root, split_path, transform, **kwargs):
     split_path = split_path[1:]
     curr = root
     for single_dir in split_path:
-        log.debug(single_dir)
         dir_name = single_dir[0]
         index = single_dir[1]
 
@@ -33,7 +32,6 @@ directory of the path is not another tag, but an attribute
 (preceded by '@'), or a text/comment block, e.g. 'text()'
 '''
 def get_parent_and_apply(root, split_path, transform, **kwargs):
-    log.debug(str(root.attrib))
     return get_node_and_apply(root, split_path[:-1], transform, **kwargs)
 
 '''
@@ -72,13 +70,6 @@ def detach_apply_reattach(node, transformation):
 For use with INSERT_AFTER and MOVE_AFTER
 '''
 def insert_node_after_text_at_index(par, contained_name, contained_index, node_to_insert):
-
-    log.debug("par: " + str(par))
-    log.debug("contained_name: " + contained_name)
-    log.debug("contained_index: " + str(contained_index))
-
-    log.debug(list(par))
-
     texts = []
     for node in par.iter():
         if node == par:
@@ -88,13 +79,7 @@ def insert_node_after_text_at_index(par, contained_name, contained_index, node_t
             if node.tail:
                 texts.append((node, node.tail, True))
 
-    log.debug("texts: " + str(texts))
-    for node in par.iter():
-        log.debug(node.text)
-        log.debug(node.tail)
     relevant_segment = texts[contained_index]
-    
-
 
     #  If it's a tail value, we need node after
     #  If there isn't one after, we put it last
@@ -154,8 +139,6 @@ def transform_append_first(curr, **kwargs):
 # Node transformation
 def transform_append(curr, **kwargs):
     value = kwargs['value']
-    log.debug('value: \n')
-    log.debug(value)
 
     # Find a better way of doing this
     # Detect if new attribute
@@ -188,12 +171,6 @@ def transform_insert_after_tag(curr, **kwargs):
     tag_index = kwargs['tag_index']
     value = kwargs['value']
     indices = [i for i, x in enumerate(curr) if x.tag == tag_name]
-    log.debug("tag_name: " + tag_name)
-    log.debug("tag_index: " + str(tag_index))
-    log.debug("indices: " + str(indices))
-    log.debug("curr: " + str(curr))
-    log.debug("curr list: " + str(list(curr)))
-    log.debug("curr properties: " + str(curr.attrib))
     new_index = indices[tag_index] + 1
     #if new_index >= len(list(curr)):
         # Insert last
@@ -271,7 +248,6 @@ def transform_move_after_tag(curr, **kwargs):
     # Remove first as it could maintain the same parent
     src_parent.remove(src)
     indices = [i for i, x in enumerate(dst) if x.tag == dst_before_name]
-    log.debug(indices)
     new_index = indices[dst_before_index]+1 
 
     dst.insert(new_index, src)
@@ -298,20 +274,15 @@ def transform_move_after_contained(curr, **kwargs):
         src_parent.text = src.tail
         src.tail = None
     else:
-        log.debug(src.tail)
         list(src_parent)[before_actual_index].tail = src.tail
         src.tail = None
 
-    log.debug("root in t_m_a_c: " + str(list(tree_root)))
 
     dst_parent = tree_root 
     for loc in destination[1:-1]:
         dst_parent = dst_parent.findall(loc[0])[loc[1]]
     dst_contained_name = destination[-1][0][:-2]
     dst_contained_index = destination[-1][1]
-
-    log.debug("dst_parent: " + str(dst_parent))
-    log.debug("dst_parent_children: " + str(list(dst_parent)))
 
     src_parent.remove(src)
     insert_node_after_text_at_index(dst_parent, dst_contained_name, dst_contained_index, src)

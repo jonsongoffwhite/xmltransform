@@ -110,19 +110,12 @@ class TestTransformInstructions(unittest.TestCase):
     def _transform_test(self, xml_input, transform_input, xml_output):
         ex_root = ElementTree.fromstring(xml_output)
 
-        self.log.debug("\nex_root: " + str(list(ex_root)))
-
-
         parser = TransformParser(transform_input)
         instructions = parser.parse()
         output_tree = parser.apply(instructions, xml_input)
         output_root = output_tree.getroot()
         # Normalise expected
         
-        self.log.debug("\nInitial XML:  " + xml_input)
-        self.log.debug("\nExpected Out: " + str(ElementTree.tostring(ex_root, encoding="unicode")))
-        self.log.debug("\nActual Out:   " + str(ElementTree.tostring(output_root, encoding="unicode")))
-
         self.assertTrue(xml_compare(output_root, ex_root))
 
     def test_rename(self):

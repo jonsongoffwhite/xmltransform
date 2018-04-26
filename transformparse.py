@@ -96,7 +96,6 @@ class TransformParser:
                 if ins.has_attribute_destination():
                     # Don't really want to pass attrib name
                     old_attrib_name = ins.locations[-1][0][1:]
-                    log.debug(old_attrib_name)
                     to.get_parent_and_apply(root, ins.locations, to.transform_rename_attrib, new_name=ins.value, attrib=old_attrib_name)
                 else:
                     to.get_node_and_apply(root, ins.locations, to.transform_rename_tag, new_name=ins.value)
@@ -149,7 +148,6 @@ class TransformParser:
                     to.get_parent_and_apply(root, ins.locations, to.transform_move_first_tag, new_location=new_location, tree_root=tree_root, src_name=src_name, src_index=src_index)
 
             elif ins.command == Command.MOVE_AFTER:
-                log.debug(ins.has_contained_dest_as_value())
                 if ins.has_contained_dest_as_value():
                     src_name = ins.locations[-1][0]
                     src_index = ins.locations[-1][1]
@@ -169,7 +167,6 @@ class TransformParser:
                     to.get_parent_and_apply(root, ins.locations, to.transform_remove_contained, contained_name=ins.locations[-1][0][:-2], contained_index=ins.locations[-1][1])
                 else:
                    to.get_parent_and_apply(root, ins.locations, to.transform_remove_tag, rem_name=ins.locations[-1][0], rem_index=ins.locations[-1][1])
-        tree.write('test_out.xml')
         return tree
 
 
