@@ -154,8 +154,23 @@ def transform_append_first(curr, **kwargs):
 # Node transformation
 def transform_append(curr, **kwargs):
     value = kwargs['value']
-    element = ET.fromstring(value)
-    curr.append(element)
+    log.debug('value: \n')
+    log.debug(value)
+
+    # Find a better way of doing this
+    # Detect if new attribute
+    # Maybe outside call here? separate function?
+    if len(value) > 1 and value.lstrip()[1] == '@':
+        content = value.lstrip()
+        content = '<' + content[2:]
+        attr_tag = ET.fromstring(content)
+        attr_value = attr_tag.text.strip()
+        attr_name = attr_tag.tag
+        curr.attrib[attr_name] = attr_value
+    else:
+
+        element = ET.fromstring(value)
+        curr.append(element)
 
 ''' INSERT_AFTER '''
 
